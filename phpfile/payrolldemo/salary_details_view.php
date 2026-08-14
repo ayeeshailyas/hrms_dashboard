@@ -5,12 +5,15 @@ if ($conn->connect_error) {
 }
 $id = $_GET['id'] ?? 0;
 
-$result = $conn->query("
-    SELECT s.*, e.f_name, e.l_name, e.photo, e.join_date 
+$stmt = $conn->prepare("
+    SELECT s.*, e.f_name, e.l_name, e.photo, e.join_date
     FROM salary_details s
     JOIN employee e ON e.id = s.emp_id
-    WHERE s.id = $id
+    WHERE s.id = ?
 ");
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if ($result->num_rows == 0) {
     die("<h3 style='color:red; text-align:center;'>No salary details found.</h3>");

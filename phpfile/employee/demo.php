@@ -1,7 +1,10 @@
 <?php
 $conn = new mysqli("localhost", "root", "", "hrms_dashboard");
 $id = $_GET['id'];
-$result = $conn->query("SELECT * FROM employee WHERE id = $id");
+$stmt = $conn->prepare("SELECT * FROM employee WHERE id = ?");
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
 $row = $result->fetch_assoc();
 ?>
 <!DOCTYPE html>

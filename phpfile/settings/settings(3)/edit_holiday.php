@@ -8,7 +8,10 @@ if (!$id) {
 }
 
 // Fetch holiday to edit
-$result = $conn->query("SELECT * FROM holidays WHERE id = $id");
+$fetch_stmt = $conn->prepare("SELECT * FROM holidays WHERE id = ?");
+$fetch_stmt->bind_param("i", $id);
+$fetch_stmt->execute();
+$result = $fetch_stmt->get_result();
 $holiday = $result->fetch_assoc();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -17,13 +20,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $start_date = $_POST['start_date'];
     $end_date = $_POST['end_date'];
 
-    $query = "UPDATE holidays SET 
-                event_name = '$event_name', 
-                description = '$description', 
-                start_date = '$start_date', 
-                end_date = '$end_date' 
-              WHERE id = $id";
-    $conn->query($query);
+    $query = "UPDATE holidays SET
+                event_name = ?,
+                description = ?,
+                start_date = ?,
+                end_date = ?
+              WHERE id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("ssssi", $event_name, $description, $start_date, $end_date, $id);
+    $stmt->execute();
 
     $redirectMonth = date('F', strtotime($start_date));
     header("Location: index.php?month=$redirectMonth&status=updated");

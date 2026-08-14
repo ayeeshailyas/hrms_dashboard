@@ -12,8 +12,11 @@ if (!$conn) {
 
 // Delete all designations of the selected department
 if (isset($_GET['delete_dept'])) {
-    $dept = mysqli_real_escape_string($conn, $_GET['delete_dept']);
-    mysqli_query($conn, "DELETE FROM department_designation WHERE department_name = '$dept'");
+    $dept = $_GET['delete_dept'];
+    $stmt = mysqli_prepare($conn, "DELETE FROM department_designation WHERE department_name = ?");
+    mysqli_stmt_bind_param($stmt, "s", $dept);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
     $_SESSION['toast'] = "Department deleted successfully!";
     header("Location: department_list.php");
     exit;

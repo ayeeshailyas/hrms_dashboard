@@ -13,14 +13,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $designations = $_POST['designations'];
 
     if (!empty($department) && !empty($designations)) {
+        $sql = "INSERT INTO department_designation (department_name, designation_name)
+                        VALUES (?, ?)";
+        $stmt = mysqli_prepare($connection, $sql);
         foreach ($designations as $designation) {
             $designation = trim($designation);
             if (!empty($designation)) {
-                $sql = "INSERT INTO department_designation (department_name, designation_name) 
-                        VALUES ('$department', '$designation')";
-                mysqli_query($connection, $sql);
+                mysqli_stmt_bind_param($stmt, "ss", $department, $designation);
+                mysqli_stmt_execute($stmt);
             }
         }
+        mysqli_stmt_close($stmt);
         $_SESSION['toast'] = "Department saved successfully!";
         header("Location: department_list.php");
         exit;

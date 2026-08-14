@@ -12,7 +12,10 @@ if (!isset($_GET['emp_id'])) {
 }
 
 $emp_id = $_GET['emp_id'];
-$query = $conn->query("SELECT * FROM salary_payments WHERE emp_id = '$emp_id' ORDER BY payment_month DESC");
+$stmt = $conn->prepare("SELECT * FROM salary_payments WHERE emp_id = ? ORDER BY payment_month DESC");
+$stmt->bind_param("i", $emp_id);
+$stmt->execute();
+$query = $stmt->get_result();
 $payments = [];
 
 while ($row = $query->fetch_assoc()) {

@@ -5,7 +5,10 @@ if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
 
 if (!isset($_GET['id'])) die("No employee ID provided.");
 $id = $_GET['id'];
-$result = $conn->query("SELECT * FROM employee WHERE id = $id");
+$stmt = $conn->prepare("SELECT * FROM employee WHERE id = ?");
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
 if ($result->num_rows === 0) die("Employee not found.");
 $row = $result->fetch_assoc();
 

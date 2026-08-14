@@ -7,9 +7,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $start_date = $_POST['start_date'];
     $end_date = $_POST['end_date'];
 
-    $query = "INSERT  INTO holidays (event_name, description, start_date, end_date) 
-              VALUES ('$event_name', '$description', '$start_date', '$end_date')";
-    $conn->query($query);
+    $query = "INSERT  INTO holidays (event_name, description, start_date, end_date)
+              VALUES (?, ?, ?, ?)";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("ssss", $event_name, $description, $start_date, $end_date);
+    $stmt->execute();
     header("Location: index.php?month=" . date('F', strtotime($start_date)) . "&status=added");
 
 

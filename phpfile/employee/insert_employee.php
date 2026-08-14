@@ -54,13 +54,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         mobile, phone, email, resume, offer_letter, joining_letter, contract_paper, id_proof, other_document,
         designation,department, join_date
     ) VALUES (
-        '$emp_id', '$f_name', '$l_name', '$dob', '$gender', '$marital_status', '$father_name', '$nationality', '$passport_no',
-        '$photo', '$bank_name', '$branch_name', '$account_name', '$account_number', '$address', '$city', '$contact_nationality',
-        '$mobile', '$phone', '$email', '$resume', '$offer_letter', '$joining_letter', '$contract_paper', '$id_proof', '$other_document',
-        '$designation','$department', '$join_date'
+        ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?
     )";
 
-    if ($conn->query($sql) === TRUE) {
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param(
+        "sssssssssssssssssssssssssssss",
+        $emp_id, $f_name, $l_name, $dob, $gender, $marital_status, $father_name, $nationality, $passport_no,
+        $photo, $bank_name, $branch_name, $account_name, $account_number, $address, $city, $contact_nationality,
+        $mobile, $phone, $email, $resume, $offer_letter, $joining_letter, $contract_paper, $id_proof, $other_document,
+        $designation, $department, $join_date
+    );
+
+    if ($stmt->execute() === TRUE) {
         header("Location: list_employee.php");
         exit();
     } else {

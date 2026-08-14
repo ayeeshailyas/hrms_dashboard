@@ -4,8 +4,11 @@ $conn = new mysqli("localhost", "root", "", "hrms_dashboard");
 $month = isset($_POST['month']) ? $_POST['month'] : 'July';
 $monthNumber = date('m', strtotime($month));
 
-$query = "SELECT * FROM holidays WHERE MONTH(start_date) = '$monthNumber'";
-$result = $conn->query($query);
+$query = "SELECT * FROM holidays WHERE MONTH(start_date) = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("s", $monthNumber);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
 <div class="flex justify-between items-center mb-6">

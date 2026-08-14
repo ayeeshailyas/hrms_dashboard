@@ -25,30 +25,51 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $deduct = $pf + $tax + $other_deduct;
     $net = $gross - $deduct;
 
-    $check = $conn->query("SELECT id FROM salary_details WHERE emp_id = $emp_id");
+    $check_stmt = $conn->prepare("SELECT id FROM salary_details WHERE emp_id = ?");
+    $check_stmt->bind_param("i", $emp_id);
+    $check_stmt->execute();
+    $check = $check_stmt->get_result();
     if ($check->num_rows > 0) {
-        $conn->query("UPDATE salary_details SET
-            department='$department', designation='$designation', enrollment_type='$type',
-            basic_salary=$basic, house_allowance=$house, medical_allowance=$medical,
-            special_allowance=$special, fuel_allowance=$fuel, phone_allowance=$phone,
-            other_allowance=$other_allowance, provident_fund=$pf, tax_deduction=$tax,
-            other_deduction=$other_deduct, gross_salary=$gross,
-            total_deduction=$deduct, net_salary=$net
-            WHERE emp_id=$emp_id");
+        $update_stmt = $conn->prepare("UPDATE salary_details SET
+            department=?, designation=?, enrollment_type=?,
+            basic_salary=?, house_allowance=?, medical_allowance=?,
+            special_allowance=?, fuel_allowance=?, phone_allowance=?,
+            other_allowance=?, provident_fund=?, tax_deduction=?,
+            other_deduction=?, gross_salary=?,
+            total_deduction=?, net_salary=?
+            WHERE emp_id=?");
+        $update_stmt->bind_param(
+            "sssdddddddddddddi",
+            $department, $designation, $type,
+            $basic, $house, $medical, $special, $fuel, $phone,
+            $other_allowance, $pf, $tax, $other_deduct, $gross,
+            $deduct, $net,
+            $emp_id
+        );
+        $update_stmt->execute();
     } else {
-        $conn->query("INSERT INTO salary_details (
+        $insert_stmt = $conn->prepare("INSERT INTO salary_details (
             emp_id, department, designation, enrollment_type,
             basic_salary, house_allowance, medical_allowance, special_allowance,
             fuel_allowance, phone_allowance, other_allowance,
             provident_fund, tax_deduction, other_deduction,
             gross_salary, total_deduction, net_salary
         ) VALUES (
-            $emp_id, '$department', '$designation', '$type',
+            ?, ?, ?, ?,
+            ?, ?, ?, ?,
+            ?, ?, ?,
+            ?, ?, ?,
+            ?, ?, ?
+        )");
+        $insert_stmt->bind_param(
+            "isssddddddddddddd",
+            $emp_id, $department, $designation, $type,
             $basic, $house, $medical, $special,
             $fuel, $phone, $other_allowance,
             $pf, $tax, $other_deduct,
             $gross, $deduct, $net
-        )");
+        );
+        $insert_stmt->execute();
     }
     header("Location: employee_salary_list.php?msg=success");
 

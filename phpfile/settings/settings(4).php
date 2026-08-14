@@ -5,7 +5,9 @@ $conn = new mysqli("localhost", "root", "", "hrms_dashboard");
 if (isset($_POST['save'])) {
     $name = trim($_POST['name']);
     if (!empty($name)) {
-        $conn->query("INSERT INTO category (name) VALUES ('$name')");
+        $stmt = $conn->prepare("INSERT INTO category (name) VALUES (?)");
+        $stmt->bind_param("s", $name);
+        $stmt->execute();
         header("Location: settings(4).php?msg=added");
         exit();
     }
@@ -16,7 +18,9 @@ if (isset($_POST['update'])) {
     $id = $_POST['edit_id'];
     $name = trim($_POST['name']);
     if (!empty($name)) {
-        $conn->query("UPDATE category SET name='$name' WHERE id=$id");
+        $stmt = $conn->prepare("UPDATE category SET name=? WHERE id=?");
+        $stmt->bind_param("si", $name, $id);
+        $stmt->execute();
         header("Location: settings(4).php?msg=updated");
         exit();
     }
@@ -25,7 +29,9 @@ if (isset($_POST['update'])) {
 // Delete Category
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
-    $conn->query("DELETE FROM category WHERE id=$id");
+    $stmt = $conn->prepare("DELETE FROM category WHERE id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
     header("Location: settings(4).php");
     exit();
 }
@@ -34,7 +40,10 @@ if (isset($_GET['delete'])) {
 $editData = null;
 if (isset($_GET['edit'])) {
     $id = $_GET['edit'];
-    $res = $conn->query("SELECT * FROM category WHERE id=$id");
+    $stmt = $conn->prepare("SELECT * FROM category WHERE id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $res = $stmt->get_result();
     $editData = $res->fetch_assoc();
 }
 

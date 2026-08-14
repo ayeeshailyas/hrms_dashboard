@@ -3,12 +3,15 @@ $conn = new mysqli("localhost", "root", "", "hrms_dashboard");
 
 if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['id'])) {
     $award_id = $_GET['id'];
-    $sql = "SELECT a.*, e.designation, e.f_name, e.l_name 
-        FROM employee_awards a 
-        JOIN employee e ON a.employee_id = e.id 
-        WHERE a.id = $award_id";
+    $sql = "SELECT a.*, e.designation, e.f_name, e.l_name
+        FROM employee_awards a
+        JOIN employee e ON a.employee_id = e.id
+        WHERE a.id = ?";
 
-    $result = $conn->query($sql);
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $award_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $award = $result->fetch_assoc();
 }
 

@@ -42,7 +42,10 @@ if ($payment_result->num_rows > 0) {
 }
 
 // Get employee info
-$emp = $conn->query("SELECT id AS emp_id, CONCAT(f_name, ' ', l_name) as name FROM employee WHERE id = $emp_id")->fetch_assoc();
+$emp_stmt = $conn->prepare("SELECT id AS emp_id, CONCAT(f_name, ' ', l_name) as name FROM employee WHERE id = ?");
+$emp_stmt->bind_param("i", $emp_id);
+$emp_stmt->execute();
+$emp = $emp_stmt->get_result()->fetch_assoc();
 
 // Custom status badges
 $status = $paid

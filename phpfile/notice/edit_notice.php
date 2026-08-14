@@ -11,8 +11,11 @@ if ($conn->connect_error) {
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 // Fetch existing data
-$sql = "SELECT * FROM notices WHERE id = $id";
-$result = $conn->query($sql);
+$sql = "SELECT * FROM notices WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
     echo "<h2 class='text-center mt-10 text-red-600'>Notice not found!</h2>";

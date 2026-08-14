@@ -4,11 +4,17 @@ if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
 
 $emp_id = $_GET['id'] ?? 0;
 
-$res = $conn->query("SELECT * FROM salary_details WHERE emp_id = $emp_id");
+$stmt = $conn->prepare("SELECT * FROM salary_details WHERE emp_id = ?");
+$stmt->bind_param("i", $emp_id);
+$stmt->execute();
+$res = $stmt->get_result();
 if ($res->num_rows == 0) die("<h3 style='color:red; text-align:center;'>No salary record found.</h3>");
 $row = $res->fetch_assoc();
 
-$emp = $conn->query("SELECT f_name, l_name FROM employee WHERE id = $emp_id")->fetch_assoc();
+$emp_stmt = $conn->prepare("SELECT f_name, l_name FROM employee WHERE id = ?");
+$emp_stmt->bind_param("i", $emp_id);
+$emp_stmt->execute();
+$emp = $emp_stmt->get_result()->fetch_assoc();
 
 // Fetch all department-designations
 $grouped = [];
@@ -36,25 +42,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $deduct = $pf + $tax + $other_deduct;
     $net = $gross - $deduct;
 
-    $conn->query("UPDATE salary_details SET
-        department = '$department',
-        designation = '$designation',
-        enrollment_type = '$type',
-        basic_salary = $basic,
-        house_allowance = $house,
-        medical_allowance = $medical,
-        special_allowance = $special,
-        fuel_allowance = $fuel,
-        phone_allowance = $phone,
-        other_allowance = $other_allow,
-        provident_fund = $pf,
-        tax_deduction = $tax,
-        other_deduction = $other_deduct,
-        gross_salary = $gross,
-        total_deduction = $deduct,
-        net_salary = $net
-        WHERE emp_id = $emp_id
+    $update_stmt = $conn->prepare("UPDATE salary_details SET
+        department = ?,
+        designation = ?,
+        enrollment_type = ?,
+        basic_salary = ?,
+        house_allowance = ?,
+        medical_allowance = ?,
+        special_allowance = ?,
+        fuel_allowance = ?,
+        phone_allowance = ?,
+        other_allowance = ?,
+        provident_fund = ?,
+        tax_deduction = ?,
+        other_deduction = ?,
+        gross_salary = ?,
+        total_deduction = ?,
+        net_salary = ?
+        WHERE emp_id = ?
     ");
+    $update_stmt->bind_param(
+        "sssdddddddddddddi",
+        $department, $designation, $type, $basic, $house, $medical, $special,
+        $fuel, $phone, $other_allow, $pf, $tax, $other_deduct, $gross, $deduct, $net,
+        $emp_id
+    );
+    $update_stmt->execute();
 
     header("Location: employee_salary_list.php");
     exit;

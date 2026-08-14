@@ -17,7 +17,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $comments = $_POST['comments'];
 
     // Get salary details
-    $salary_query = $conn->query("SELECT * FROM salary_details WHERE emp_id = '$emp_id' LIMIT 1");
+    $salary_stmt = $conn->prepare("SELECT * FROM salary_details WHERE emp_id = ? LIMIT 1");
+    $salary_stmt->bind_param("i", $emp_id);
+    $salary_stmt->execute();
+    $salary_query = $salary_stmt->get_result();
     $salary_data = $salary_query->fetch_assoc();
 
     $gross_salary = $salary_data['gross_salary'];
@@ -52,7 +55,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Function to fetch payment history
 function getPaymentHistory($conn, $emp_id) {
     $history = [];
-    $query = $conn->query("SELECT * FROM salary_payments WHERE emp_id = '$emp_id' ORDER BY payment_month DESC");
+    $stmt = $conn->prepare("SELECT * FROM salary_payments WHERE emp_id = ? ORDER BY payment_month DESC");
+    $stmt->bind_param("i", $emp_id);
+    $stmt->execute();
+    $query = $stmt->get_result();
     while ($row = $query->fetch_assoc()) {
         $history[] = $row;
     }

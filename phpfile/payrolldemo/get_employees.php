@@ -15,13 +15,16 @@ if (count($parts) !== 2) {
     die('<option value="">Invalid designation</option>');
 }
 
-$department = $conn->real_escape_string($parts[0]);
-$designation = $conn->real_escape_string($parts[1]);
+$department = $parts[0];
+$designation = $parts[1];
 
-$result = $conn->query("SELECT id, CONCAT(f_name, ' ', l_name) AS name 
-                        FROM employee 
-                        WHERE department='$department' AND designation='$designation'
+$stmt = $conn->prepare("SELECT id, CONCAT(f_name, ' ', l_name) AS name
+                        FROM employee
+                        WHERE department=? AND designation=?
                         ORDER BY f_name, l_name");
+$stmt->bind_param("ss", $department, $designation);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if (!$result || $result->num_rows === 0) {
     die('<option value="">No employees found</option>');

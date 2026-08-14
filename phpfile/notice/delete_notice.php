@@ -11,8 +11,10 @@ if ($conn->connect_error) {
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if ($id > 0) {
-    $deleteQuery = "DELETE FROM notices WHERE id = $id";
-    if ($conn->query($deleteQuery)) {
+    $deleteQuery = "DELETE FROM notices WHERE id = ?";
+    $stmt = $conn->prepare($deleteQuery);
+    $stmt->bind_param("i", $id);
+    if ($stmt->execute()) {
         header("Location: manage_notice.php?msg=deleted");
         exit();
     } else {

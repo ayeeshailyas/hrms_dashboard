@@ -38,7 +38,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     // Fetch existing file names
-    $result = $conn->query("SELECT * FROM employee WHERE id = $id");
+    $fetch_stmt = $conn->prepare("SELECT * FROM employee WHERE id = ?");
+    $fetch_stmt->bind_param("i", $id);
+    $fetch_stmt->execute();
+    $result = $fetch_stmt->get_result();
     if ($result->num_rows === 0) die("Employee not found.");
     $row = $result->fetch_assoc();
 
@@ -51,17 +54,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $other_document = handleFileUpdate('other_document', $row['other_document']);
 
     $sql = "UPDATE employee SET
-        emp_id='$emp_id', f_name='$f_name', l_name='$l_name', dob='$dob', gender='$gender',
-        marital_status='$marital_status', father_name='$father_name', nationality='$nationality',
-        passport_no='$passport_no', photo='$photo', bank_name='$bank_name', branch_name='$branch_name',
-        account_name='$account_name', account_number='$account_number', address='$address',
-        city='$city', contact_nationality='$contact_nationality', mobile='$mobile', phone='$phone',
-        email='$email', resume='$resume', offer_letter='$offer_letter', joining_letter='$joining_letter',
-        contract_paper='$contract_paper', id_proof='$id_proof', other_document='$other_document',
-        designation='$designation', department='$department', join_date='$join_date'
-        WHERE id=$id";
+        emp_id=?, f_name=?, l_name=?, dob=?, gender=?,
+        marital_status=?, father_name=?, nationality=?,
+        passport_no=?, photo=?, bank_name=?, branch_name=?,
+        account_name=?, account_number=?, address=?,
+        city=?, contact_nationality=?, mobile=?, phone=?,
+        email=?, resume=?, offer_letter=?, joining_letter=?,
+        contract_paper=?, id_proof=?, other_document=?,
+        designation=?, department=?, join_date=?
+        WHERE id=?";
 
-    if ($conn->query($sql) === TRUE) {
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param(
+        "sssssssssssssssssssssssssssssi",
+        $emp_id, $f_name, $l_name, $dob, $gender,
+        $marital_status, $father_name, $nationality,
+        $passport_no, $photo, $bank_name, $branch_name,
+        $account_name, $account_number, $address,
+        $city, $contact_nationality, $mobile, $phone,
+        $email, $resume, $offer_letter, $joining_letter,
+        $contract_paper, $id_proof, $other_document,
+        $designation, $department, $join_date,
+        $id
+    );
+
+    if ($stmt->execute() === TRUE) {
         header("Location: list_employee.php?updated=1");
         exit();
     } else {

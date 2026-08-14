@@ -13,7 +13,10 @@ if (!isset($_GET['emp_id'])) {
 }
 
 $emp_id = $_GET['emp_id'];
-$query = $conn->query("SELECT * FROM salary_details WHERE emp_id = '$emp_id' LIMIT 1");
+$stmt = $conn->prepare("SELECT * FROM salary_details WHERE emp_id = ? LIMIT 1");
+$stmt->bind_param("i", $emp_id);
+$stmt->execute();
+$query = $stmt->get_result();
 
 if ($query->num_rows > 0) {
     $data = $query->fetch_assoc();

@@ -5,11 +5,16 @@ $id = $_GET['id'] ?? null;
 
 if ($id) {
     // Find the holiday to get the month before deletion
-    $res = $conn->query("SELECT start_date FROM holidays WHERE id = $id");
+    $stmt = $conn->prepare("SELECT start_date FROM holidays WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $res = $stmt->get_result();
     $row = $res->fetch_assoc();
     $month = $row ? date('F', strtotime($row['start_date'])) : date('F');
 
-    $conn->query("DELETE FROM holidays WHERE id = $id");
+    $del_stmt = $conn->prepare("DELETE FROM holidays WHERE id = ?");
+    $del_stmt->bind_param("i", $id);
+    $del_stmt->execute();
     header("Location: index.php?month=$month&status=deleted");
 
 } else {

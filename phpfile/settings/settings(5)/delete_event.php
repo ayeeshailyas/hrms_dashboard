@@ -3,7 +3,9 @@ include_once 'db.php';
 
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
-    $conn->query("DELETE FROM events WHERE id=$id");
+    $stmt = $conn->prepare("DELETE FROM events WHERE id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
 }
 
 header("Location: index.php");
